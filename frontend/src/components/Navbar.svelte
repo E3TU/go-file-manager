@@ -1,7 +1,7 @@
 <nav class="navbar">
     <div class="logo">Go file manager</div>
     <ul>
-        <li><a class="logout">Log out</a></li>
+        <li><a href="/" class="logout">Log out</a></li>
     </ul>
 </nav>
 
@@ -19,6 +19,8 @@
     .logo{
         margin-left: 10rem;
         font-size: 2rem;
+        cursor: pointer;
+        color: var(--blue);
     }
     ul{
         list-style: none;
