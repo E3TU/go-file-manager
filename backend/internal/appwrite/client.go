@@ -8,9 +8,12 @@ import (
 )
 
 func NewClient(cfg config.Config) client.Client {
-	return appwrite.NewClient(
+
+	clt := appwrite.NewClient(
 		appwrite.WithEndpoint(cfg.AppwriteEndpoint),
 		appwrite.WithProject(cfg.AppwriteProjectId),
 		appwrite.WithKey(cfg.AppwriteApiKey),
 	)
+
+	return clt
 }
