@@ -46,7 +46,7 @@ func (h *Handler) CreateSession(c *gin.Context) {
 		return
 	}
 
-	cookieName := "a_session_" + h.authService.GetProjectID()
+	cookieName := "a_session"
 	c.SetCookie(
 		cookieName,
 		session.SessionSecret,
@@ -61,7 +61,7 @@ func (h *Handler) CreateSession(c *gin.Context) {
 }
 
 func (h *Handler) GetSession(c *gin.Context) {
-	cookieName := "a_session_" + h.authService.GetProjectID()
+	cookieName := "a_session"
 	cookie, err := c.Cookie(cookieName)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No session cookie"})
@@ -91,7 +91,7 @@ func (h *Handler) DeleteSession(c *gin.Context) {
 		return
 	}
 
-	cookieName := "a_session_" + h.authService.GetProjectID()
+	cookieName := "a_session"
 	cookie, err := c.Cookie(cookieName)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "No session cookie"})
