@@ -11,7 +11,6 @@ func NewClient(cfg config.Config) client.Client {
 
 	clt := appwrite.NewClient(
 		appwrite.WithEndpoint(cfg.AppwriteEndpoint),
-		appwrite.WithProject(cfg.AppwriteProjectId),
 		appwrite.WithKey(cfg.AppwriteApiKey),
 	)
 
