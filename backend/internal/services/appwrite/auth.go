@@ -55,7 +55,13 @@ type GetSessionResponse struct {
 }
 
 func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
-	service := users.New(s.client)
+	adminClient := appwrite.NewClient(
+		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
+		appwrite.WithProject(s.cfg.AppwriteProjectId),
+		appwrite.WithKey(s.cfg.AppwriteApiKey),
+	)
+	
+	service := users.New(adminClient)
 
 	user, err := service.Create(
 		id.Unique(),
@@ -69,14 +75,20 @@ func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
 
 	return &RegisterResponse{
 		UserID:    user.Id,
-		Name:      user.Name,
-		Email:     user.Email,
+		Name:     user.Name,
+		Email:    user.Email,
 		CreatedAt: user.CreatedAt,
 	}, nil
 }
 
 func (s *AuthService) CreateSession(req CreateSessionRequest) (*CreateSessionResponse, error) {
-	service := account.New(s.client)
+	adminClient := appwrite.NewClient(
+		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
+		appwrite.WithProject(s.cfg.AppwriteProjectId),
+		appwrite.WithKey(s.cfg.AppwriteApiKey),
+	)
+	
+	service := account.New(adminClient)
 
 	session, err := service.CreateEmailPasswordSession(req.Email, req.Password)
 	if err != nil {
@@ -93,10 +105,8 @@ func (s *AuthService) CreateSession(req CreateSessionRequest) (*CreateSessionRes
 func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, error) {
 	sessionClient := appwrite.NewClient(
 		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
-		appwrite.WithProject(s.cfg.AppwriteProjectId),
+		appwrite.WithSession(sessionSecret),
 	)
-
-	sessionClient.AddHeader("X-Appwrite-Session", sessionSecret)
 
 	service := account.New(sessionClient)
 
@@ -119,10 +129,8 @@ func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, err
 func (s *AuthService) DeleteSession(sessionId string, sessionSecret string) error {
 	sessionClient := appwrite.NewClient(
 		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
-		appwrite.WithProject(s.cfg.AppwriteProjectId),
+		appwrite.WithSession(sessionSecret),
 	)
-
-	sessionClient.AddHeader("X-Appwrite-Session", sessionSecret)
 
 	service := account.New(sessionClient)
 
