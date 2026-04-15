@@ -11,14 +11,24 @@ export const actions: Actions = {
 		const res = await fetch(`${API_BASE}/auth/session`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ email, password })
+			body: JSON.stringify({ email, password }),
 		});
 
+		const data = await res.json();
+
 		if (!res.ok) {
-			const err = await res.json();
-			return { error: err.error || 'Login failed' };
+			return { error: data.error || 'Login failed' };
 		}
 
-		redirect(303, '/');
+		// Store the session secret in a cookie from SvelteKit
+		cookies.set('a_session', data.sessionSecret, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: false, // true in production
+			maxAge: 60 * 60, // 1 hour
+		});
+
+		throw redirect(303, '/');
 	}
 };
