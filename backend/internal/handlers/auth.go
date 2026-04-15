@@ -40,21 +40,30 @@ func (h *Handler) CreateSession(c *gin.Context) {
 		return
 	}
 
+	// Create Appwrite session
 	session, err := h.authService.CreateSession(req)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
+	// Set cookie for session secret
 	cookieName := "a_session"
+
+	// Detect if we are in production (HTTPS) or local dev
+	isProd := false
+	if c.Request.TLS != nil {
+		isProd = true
+	}
+
 	c.SetCookie(
 		cookieName,
 		session.SessionSecret,
-		0,
+		3600, // 1 hour expiry
 		"/",
-		"",
-		true,
-		true,
+		"localhost", // domain (change in prod)
+		isProd,      // Secure in prod
+		true,        // HttpOnly
 	)
 
 	c.JSON(http.StatusOK, session)
@@ -69,12 +78,7 @@ func (h *Handler) GetSession(c *gin.Context) {
 	}
 
 	session, err := h.authService.GetSession(cookie)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-		return
-	}
-
-	if !session.Valid {
+	if err != nil || !session.Valid {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid session"})
 		return
 	}
