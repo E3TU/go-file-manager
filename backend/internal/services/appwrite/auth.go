@@ -60,7 +60,7 @@ func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
 		appwrite.WithProject(s.cfg.AppwriteProjectId),
 		appwrite.WithKey(s.cfg.AppwriteApiKey),
 	)
-	
+
 	service := users.New(adminClient)
 
 	user, err := service.Create(
@@ -75,8 +75,8 @@ func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
 
 	return &RegisterResponse{
 		UserID:    user.Id,
-		Name:     user.Name,
-		Email:    user.Email,
+		Name:      user.Name,
+		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
 	}, nil
 }
@@ -87,7 +87,7 @@ func (s *AuthService) CreateSession(req CreateSessionRequest) (*CreateSessionRes
 		appwrite.WithProject(s.cfg.AppwriteProjectId),
 		appwrite.WithKey(s.cfg.AppwriteApiKey),
 	)
-	
+
 	service := account.New(adminClient)
 
 	session, err := service.CreateEmailPasswordSession(req.Email, req.Password)
@@ -103,8 +103,14 @@ func (s *AuthService) CreateSession(req CreateSessionRequest) (*CreateSessionRes
 }
 
 func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, error) {
+	if sessionSecret == "" {
+		return &GetSessionResponse{Valid: false}, nil
+	}
+
+	// Use session secret to create Appwrite client
 	sessionClient := appwrite.NewClient(
 		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
+		appwrite.WithProject(s.cfg.AppwriteProjectId),
 		appwrite.WithSession(sessionSecret),
 	)
 
@@ -112,9 +118,7 @@ func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, err
 
 	user, err := service.Get()
 	if err != nil {
-		return &GetSessionResponse{
-			Valid: false,
-		}, nil
+		return &GetSessionResponse{Valid: false}, nil
 	}
 
 	return &GetSessionResponse{
