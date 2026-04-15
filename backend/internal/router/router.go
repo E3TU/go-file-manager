@@ -14,7 +14,7 @@ func RegisterRoutes(r *gin.Engine, h *handlers.Handler) {
 	api.GET("/auth/session", h.GetSession)
 	api.DELETE("/auth/session", h.DeleteSession)
 
-	api.POST("/storage/files", h.UploadFile)
-	api.GET("/storage/files", h.ListFiles)
-	api.DELETE("/storage/files/:id", h.DeleteFile)
+	// api.POST("/storage/files", h.UploadFile)
+	// api.GET("/storage/files", h.ListFiles)
+	// api.DELETE("/storage/files/:id", h.DeleteFile)
 }
