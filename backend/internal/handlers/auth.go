@@ -24,13 +24,45 @@ func (h *Handler) Register(c *gin.Context) {
 		return
 	}
 
+	// 1️⃣ Create the user
 	user, err := h.authService.Register(req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, user)
+	// 2️⃣ Automatically create a session (login)
+	session, err := h.authService.CreateSession(appwrite.CreateSessionRequest{
+		Email:    req.Email,
+		Password: req.Password,
+	})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create session after registration"})
+		return
+	}
+
+	// 3️⃣ Set the cookie exactly like the login flow
+	cookieName := "a_session"
+	isProd := false
+	if c.Request.TLS != nil {
+		isProd = true
+	}
+
+	c.SetCookie(
+		cookieName,
+		session.SessionSecret,
+		3600, // 1 hour
+		"/",
+		"localhost",
+		isProd, // Secure only in prod
+		true,   // HttpOnly
+	)
+
+	// 4️⃣ Return the user + session info if needed
+	c.JSON(http.StatusCreated, gin.H{
+		"user":    user,
+		"session": session,
+	})
 }
 
 func (h *Handler) CreateSession(c *gin.Context) {

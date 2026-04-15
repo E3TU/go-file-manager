@@ -8,23 +8,28 @@ export const actions: Actions = {
 		const name = formData.get('name')?.toString() || '';
 		const email = formData.get('email')?.toString() || '';
 		const password = formData.get('password')?.toString() || '';
-		const confirmPassword = formData.get('confirmPassword')?.toString() || '';
 
-		if (password !== confirmPassword) {
-			return { error: 'Passwords do not match' };
-		}
-
-		const registerRes = await fetch(`${API_BASE}/auth/register`, {
+		const res = await fetch(`${API_BASE}/auth/register`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ name, email, password })
 		});
 
-		if (!registerRes.ok) {
-			const err = await registerRes.json();
-			return { error: err.error || 'Registration failed' };
+		const data = await res.json();
+
+		if (!res.ok) {
+			return { error: data.error || 'Registration failed' };
 		}
 
-		redirect(303, '/');
+		// Set cookie from the response session (proxying like login)
+		cookies.set('a_session', data.session.sessionSecret, {
+			path: '/',
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: false, // true in prod
+			maxAge: 60 * 60, // 1 hour
+		});
+
+		throw redirect(303, '/');
 	}
 };
