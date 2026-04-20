@@ -55,11 +55,11 @@
 			<input onchange={onInputChange} bind:this={inputEl} class="file-input" type="file" multiple />
 		</div>
 	</div>
-	<!-- <ul>
+	<ul class="files">
 		{#each files as file}
 			<li>{file.name} ({file.size} bytes)</li>
 		{/each}
-	</ul> -->
+	</ul>
 </div>
 
 <style>
@@ -117,5 +117,11 @@
 	}
 	.file-input {
 		display: none;
+	}
+	.files{
+		color: var(--text-primary);
+		list-style: none;
+		padding-top: 2rem;
+		font-size: 1.5rem;
 	}
 </style>
