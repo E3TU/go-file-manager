@@ -8,12 +8,14 @@ import (
 )
 
 type Handler struct {
-	authService *appwrite.AuthService
+	authService     *appwrite.AuthService
+	storageService  *appwrite.StorageService
 }
 
-func NewHandler(authSvc *appwrite.AuthService) *Handler {
+func NewHandler(authSvc *appwrite.AuthService, storageSvc *appwrite.StorageService) *Handler {
 	return &Handler{
-		authService: authSvc,
+		authService:    authSvc,
+		storageService: storageSvc,
 	}
 }
 
