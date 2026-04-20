@@ -41,10 +41,11 @@ type FileResponse struct {
 	SizeOriginal int    `json:"sizeOriginal,omitempty"`
 	MimeType     string `json:"mimeType"`
 	CreatedAt    string `json:"createdAt"`
-	DownloadURL string `json:"downloadUrl,omitempty"`
+	DownloadURL  string `json:"downloadUrl,omitempty"`
 }
 
 func (s *StorageService) UploadFile(bucketID string, fileName string, fileContent []byte) (*FileResponse, error) {
+
 	tmpFile, err := os.CreateTemp("", "upload-*")
 	if err != nil {
 		return nil, err
