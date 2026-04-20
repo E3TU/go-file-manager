@@ -23,7 +23,13 @@ func main() {
 	h := handlers.NewHandler(authSvc, storageSvc)
 
 	r := gin.Default()
-	r.Use(cors.Default())
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:8080"},
+		AllowMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:   []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		AllowCredentials: true,
+		ExposeHeaders:  []string{"Content-Type"},
+	}))
 	router.RegisterRoutes(r, h)
 
 	log.Fatal(r.Run(":" + cfg.Port))
