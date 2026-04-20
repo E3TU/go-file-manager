@@ -1,6 +1,8 @@
 package appwrite
 
 import (
+	"log"
+
 	"file-manager/internal/config"
 
 	"github.com/appwrite/sdk-for-go/account"
@@ -10,18 +12,19 @@ import (
 	"github.com/appwrite/sdk-for-go/users"
 )
 
+// AuthService handles user authentication with Appwrite
 type AuthService struct {
-	client client.Client
-	cfg    config.Config
+	cfg config.Config
 }
 
-func NewAuthService(client client.Client, cfg config.Config) *AuthService {
+// NewAuthService creates a new AuthService instance
+func NewAuthService(cfg config.Config) *AuthService {
 	return &AuthService{
-		client: client,
-		cfg:    cfg,
+		cfg: cfg,
 	}
 }
 
+// Request/Response DTOs
 type RegisterRequest struct {
 	Name     string `json:"name"`
 	Email    string `json:"email"`
@@ -54,13 +57,32 @@ type GetSessionResponse struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
-	adminClient := appwrite.NewClient(
+// -------------------------
+// Client helpers
+// -------------------------
+
+func (s *AuthService) newAdminClient() client.Client {
+	return appwrite.NewClient(
 		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
 		appwrite.WithProject(s.cfg.AppwriteProjectId),
 		appwrite.WithKey(s.cfg.AppwriteApiKey),
 	)
+}
 
+func (s *AuthService) newSessionClient(sessionSecret string) client.Client {
+	return appwrite.NewClient(
+		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
+		appwrite.WithProject(s.cfg.AppwriteProjectId),
+		appwrite.WithSession(sessionSecret),
+	)
+}
+
+// -------------------------
+// Auth methods
+// -------------------------
+
+func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
+	adminClient := s.newAdminClient()
 	service := users.New(adminClient)
 
 	user, err := service.Create(
@@ -82,12 +104,7 @@ func (s *AuthService) Register(req RegisterRequest) (*RegisterResponse, error) {
 }
 
 func (s *AuthService) CreateSession(req CreateSessionRequest) (*CreateSessionResponse, error) {
-	adminClient := appwrite.NewClient(
-		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
-		appwrite.WithProject(s.cfg.AppwriteProjectId),
-		appwrite.WithKey(s.cfg.AppwriteApiKey),
-	)
-
+	adminClient := s.newAdminClient()
 	service := account.New(adminClient)
 
 	session, err := service.CreateEmailPasswordSession(req.Email, req.Password)
@@ -107,17 +124,12 @@ func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, err
 		return &GetSessionResponse{Valid: false}, nil
 	}
 
-	// Use session secret to create Appwrite client
-	sessionClient := appwrite.NewClient(
-		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
-		appwrite.WithProject(s.cfg.AppwriteProjectId),
-		appwrite.WithSession(sessionSecret),
-	)
-
+	sessionClient := s.newSessionClient(sessionSecret)
 	service := account.New(sessionClient)
 
 	user, err := service.Get()
 	if err != nil {
+		log.Printf("GetSession error: %v", err)
 		return &GetSessionResponse{Valid: false}, nil
 	}
 
@@ -131,17 +143,9 @@ func (s *AuthService) GetSession(sessionSecret string) (*GetSessionResponse, err
 }
 
 func (s *AuthService) DeleteSession(sessionId string, sessionSecret string) error {
-	sessionClient := appwrite.NewClient(
-		appwrite.WithEndpoint(s.cfg.AppwriteEndpoint),
-		appwrite.WithSession(sessionSecret),
-	)
-
+	sessionClient := s.newSessionClient(sessionSecret)
 	service := account.New(sessionClient)
 
 	_, err := service.DeleteSession(sessionId)
 	return err
-}
-
-func (s *AuthService) GetProjectID() string {
-	return s.cfg.AppwriteProjectId
 }
