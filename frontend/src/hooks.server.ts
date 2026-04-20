@@ -1,7 +1,7 @@
 import { redirect, type Handle } from '@sveltejs/kit';
 
 const API_BASE = 'http://localhost:8080/api';
-const PUBLIC_ROUTES = ['/login', '/register', '/logout'];
+const PUBLIC_ROUTES = ['/login', '/register', '/logout', '/storage'];
 const COOKIE_NAME = 'a_session';
 
 export const handle: Handle = async ({ event, resolve }) => {
