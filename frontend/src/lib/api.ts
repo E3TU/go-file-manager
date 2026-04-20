@@ -1,4 +1,4 @@
-const API_BASE : string = 'http://localhost:8080/api';
+const API_BASE: string = 'http://localhost:8080/api';
 
 export async function login(email: string, password: string) {
     const res = await fetch(`${API_BASE}/auth/session`, {
@@ -18,7 +18,8 @@ export async function register(name: string, email: string, password: string) {
     const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password }),
+        credentials: 'include'
     });
     if (!res.ok) {
         const err = await res.json();
@@ -37,4 +38,49 @@ export function setSession(session: string) {
 
 export function clearSession() {
     localStorage.removeItem('session');
+}
+
+export interface UploadedFile {
+    id: string;
+    name: string;
+    sizeOriginal: number;
+    mimeType: string;
+    createdAt: string;
+    downloadUrl: string;
+}
+
+export async function uploadFile(file: File): Promise<UploadedFile> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/storage/files`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Upload failed');
+    }
+    return res.json();
+}
+
+export async function listFiles(): Promise<{ files: UploadedFile[] }> {
+    const res = await fetch(`${API_BASE}/storage/files`, {
+        credentials: 'include'
+    });
+    if (!res.ok) {
+        throw new Error('Failed to list files');
+    }
+    return res.json();
+}
+
+export async function deleteFile(fileId: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/storage/files/${fileId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    });
+    if (!res.ok) {
+        throw new Error('Delete failed');
+    }
 }
