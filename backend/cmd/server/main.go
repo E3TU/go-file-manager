@@ -17,11 +17,10 @@ func main() {
 
 	cfg := config.Load()
 
-	// client := appwrite.NewClient(cfg)
-
 	authSvc := appwriteSvc.NewAuthService(cfg)
+	storageSvc := appwriteSvc.NewStorageService(cfg)
 
-	h := handlers.NewHandler(authSvc)
+	h := handlers.NewHandler(authSvc, storageSvc)
 
 	r := gin.Default()
 	r.Use(cors.Default())
