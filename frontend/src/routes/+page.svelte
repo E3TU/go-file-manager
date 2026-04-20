@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import Navbar from '../components/Navbar.svelte';
 	import { uploadFile, listFiles, deleteFile, type UploadedFile } from '../lib/api';
+	import { onMount } from 'svelte';
 
 	let files = $state<UploadedFile[]>([]);
 	let isDragging = $state(false);
@@ -77,8 +78,9 @@
 		return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 	}
 
-	// Load files on mount
-	loadFiles();
+	onMount(() => {
+		loadFiles();
+	});
 </script>
 
 <Navbar />
@@ -191,7 +193,9 @@
 		background: var(--gray);
 		border-radius: 8px;
 		margin-bottom: 0.5rem;
-		box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+		box-shadow:
+			rgba(0, 0, 0, 0.16) 0px 3px 6px,
+			rgba(0, 0, 0, 0.23) 0px 3px 6px;
 	}
 	.file-name {
 		flex: 1;
