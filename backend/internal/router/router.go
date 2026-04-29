@@ -16,5 +16,6 @@ func RegisterRoutes(r *gin.Engine, h *handlers.Handler) {
 
 	api.POST("/storage/files", h.UploadFile)
 	api.GET("/storage/files", h.ListFiles)
+	api.GET("/storage/files/:id/download", h.DownloadFile)
 	api.DELETE("/storage/files/:id", h.DeleteFile)
 }
