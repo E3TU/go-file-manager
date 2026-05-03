@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "skills": {
+    "appwrite-go": {
+      "source": "appwrite/agent-skills",
+      "sourceType": "github",
+      "computedHash": "70a78a7dd5cb37bccf5239b516346f27f24d2de56f6a668b14cc601cc3baa4da"
+    },
+    "caveman": {
+      "source": "JuliusBrussee/caveman",
+      "sourceType": "github",
+      "computedHash": "a818cdc41dcfaa50dd891c5cb5e5705968338de02e7e37949ca56e8c30ad4176"
+    }
+  }
+}
