@@ -178,6 +178,7 @@ func (s *StorageService) DeleteFile(bucketID string, fileID string, userID strin
 	return err
 }
 
+// THIS ONLY WORKS IF FILE BUCKET PERMISSIONS ARE SET TO ALL GUESTS ON APPWRITE CONSOLE. NOT SECURE FOR PROD
 func (s *StorageService) GetFileDownloadURL(bucketID string, fileID string, userID string) (string, error) {
 	_, permissions, err := s.GetFile(bucketID, fileID)
 	if err != nil {
@@ -188,11 +189,11 @@ func (s *StorageService) GetFileDownloadURL(bucketID string, fileID string, user
 		return "", ErrPermissionDenied
 	}
 
-	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download?project=%s",
+	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download?project=%s&mode=admin",
 		s.cfg.AppwriteEndpoint, bucketID, fileID, s.cfg.AppwriteProjectId), nil
 }
 
 func (s *StorageService) GetDownloadURL(bucketID string, fileID string) string {
-	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download",
-		s.cfg.AppwriteEndpoint, bucketID, fileID)
+	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download?project=%s&mode=admin",
+		s.cfg.AppwriteEndpoint, bucketID, fileID, s.cfg.AppwriteProjectId)
 }
