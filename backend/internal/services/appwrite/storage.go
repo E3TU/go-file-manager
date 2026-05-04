@@ -178,22 +178,51 @@ func (s *StorageService) DeleteFile(bucketID string, fileID string, userID strin
 	return err
 }
 
-// THIS ONLY WORKS IF FILE BUCKET PERMISSIONS ARE SET TO ALL GUESTS ON APPWRITE CONSOLE. NOT SECURE FOR PROD
-func (s *StorageService) GetFileDownloadURL(bucketID string, fileID string, userID string) (string, error) {
+func (s *StorageService) DownloadFile(bucketID, fileID, userID, localPath string) error {
 	_, permissions, err := s.GetFile(bucketID, fileID)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	if !s.hasReadPermission(permissions, userID) {
-		return "", ErrPermissionDenied
+		return ErrPermissionDenied
 	}
 
-	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download?project=%s&mode=admin",
-		s.cfg.AppwriteEndpoint, bucketID, fileID, s.cfg.AppwriteProjectId), nil
+	adminClient := s.newAdminClient()
+	svc := storage.New(adminClient)
+
+	data, err := svc.GetFileDownload(bucketID, fileID)
+	if err != nil {
+		return err
+	}
+
+	outFile, err := os.Create(localPath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	_, err = outFile.Write(*data)
+	return err
 }
 
-func (s *StorageService) GetDownloadURL(bucketID string, fileID string) string {
-	return fmt.Sprintf("%s/storage/buckets/%s/files/%s/download?project=%s&mode=admin",
-		s.cfg.AppwriteEndpoint, bucketID, fileID, s.cfg.AppwriteProjectId)
+func (s *StorageService) GetFileBytes(bucketID, fileID, userID string) ([]byte, error) {
+	_, permissions, err := s.GetFile(bucketID, fileID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !s.hasReadPermission(permissions, userID) {
+		return nil, ErrPermissionDenied
+	}
+
+	adminClient := s.newAdminClient()
+	svc := storage.New(adminClient)
+
+	data, err := svc.GetFileDownload(bucketID, fileID)
+	if err != nil {
+		return nil, err
+	}
+
+	return *data, nil
 }

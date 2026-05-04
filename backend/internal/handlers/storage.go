@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"errors"
 	"io"
 	"net/http"
@@ -44,8 +45,6 @@ func (h *Handler) UploadFile(c *gin.Context) {
 		return
 	}
 
-	resp.DownloadURL = h.storageService.GetDownloadURL(bucketID, resp.ID)
-
 	c.JSON(http.StatusCreated, resp)
 }
 
@@ -68,10 +67,6 @@ func (h *Handler) ListFiles(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
-	}
-
-	for i := range files {
-		files[i].DownloadURL = h.storageService.GetDownloadURL(bucketID, files[i].ID)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"files": files})
@@ -136,7 +131,8 @@ func (h *Handler) DownloadFile(c *gin.Context) {
 	}
 
 	bucketID := h.storageService.GetConfig().BucketID
-	downloadURL, err := h.storageService.GetFileDownloadURL(bucketID, fileID, session.UserID)
+
+	fileResp, _, err := h.storageService.GetFile(bucketID, fileID)
 	if err != nil {
 		if errors.Is(err, appwrite.ErrFileNotFound) {
 			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
@@ -150,5 +146,15 @@ func (h *Handler) DownloadFile(c *gin.Context) {
 		return
 	}
 
-	c.Redirect(http.StatusFound, downloadURL)
+	data, err := h.storageService.GetFileBytes(bucketID, fileID, session.UserID)
+	if err != nil {
+		if errors.Is(err, appwrite.ErrPermissionDenied) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Permission denied"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.DataFromReader(http.StatusOK, int64(fileResp.SizeOriginal), fileResp.MimeType, bytes.NewReader(data), nil)
 }
