@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
 	import Navbar from '../components/Navbar.svelte';
-	import { uploadFile, listFiles, deleteFile, type UploadedFile } from '../lib/api';
+	import { uploadFile, listFiles, deleteFile, downloadFile, type UploadedFile } from '../lib/api';
 	import { onMount } from 'svelte';
 
 	let files = $state<UploadedFile[]>([]);
@@ -108,9 +108,9 @@
 			<li>
 				<span class="file-name">{file.name}</span>
 				<span class="file-size">{formatSize(file.sizeOriginal)}</span>
-				<a href={file.downloadUrl} target="_blank" class="download-link">
+				<button onclick={() => downloadFile(file.id, file.name)} class="download-link">
 					<Icon icon="solar:download-outline" width="20" height="20" />
-				</a>
+				</button>
 				<button onclick={() => removeFile(file)} class="delete-btn">
 					<Icon icon="solar:trash-bin-2-outline" width="20" height="20" />
 				</button>

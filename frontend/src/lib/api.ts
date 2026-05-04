@@ -46,7 +46,6 @@ export interface UploadedFile {
     sizeOriginal: number;
     mimeType: string;
     createdAt: string;
-    downloadUrl: string;
 }
 
 export async function uploadFile(file: File): Promise<UploadedFile> {
@@ -83,4 +82,22 @@ export async function deleteFile(fileId: string): Promise<void> {
     if (!res.ok) {
         throw new Error('Delete failed');
     }
+}
+
+export async function downloadFile(fileId: string, fileName: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/storage/files/${fileId}/download`, {
+        credentials: 'include'
+    });
+    if (!res.ok) {
+        throw new Error('Download failed');
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 }
